@@ -1,38 +1,38 @@
 from flask import Flask, request, jsonify, render_template, url_for, redirect
-import pymongo
-
 
 
 app = Flask(__name__)
 app.config.from_object("config")
 app.secret_key = '1234567'
 
-client = pymongo.MongoClient("127.0.0.1", 27017)
-db = client["voicehash"]
-hashSet = db["hashset"]
 
-# 服务器url
-url = "https://res.imirai.xyz/voice/"
 
-def popMongoID(mongoJSON):
-    resultJSON = [s.copy() for s in mongoJSON]
-    for r in resultJSON:
-        r.pop("_id")
-    return resultJSON
 
-@app.route('/voice')
+
+
+
+@app.route('/getVoice')
 def giveBackURL():
     if(request.method == "GET"):
-        mongoJSON = hashSet.aggregate([{ '$sample': { 'size': 1 } }])
-        result = popMongoID(mongoJSON)
-        # print(result[0])
-        url_to_voice = url + result[0]["voiceHash"]
-        return url_to_voice
+        # 从./db/character.db中随机取出一条数据，以json返回
+        import sqlite3
+        conn = sqlite3.connect('./db/character.db')
+        c = conn.cursor()
+        c.execute("SELECT * FROM character WHERE id >= (ABS(RANDOM()) % (SELECT MAX(rowid) FROM character)) LIMIT 1;")
+        result = c.fetchone()
+        conn.close()
+        # 生成返回的json
+        return jsonify({
+            'character': result[1],
+            'topic': result[2],
+            'text': result[3],
+            'audio': result[4],
+        })
+
 
 
 
 if __name__ == '__main__':
-    from werkzeug.contrib.fixers import ProxyFix
-    app.wsgi_app = ProxyFix(app.wsgi_app)
+    
     app.run(host="127.0.0.1",
             port=8000)
