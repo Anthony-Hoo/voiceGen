@@ -12,7 +12,7 @@ app.secret_key = 'd25ba7735e13a52601fd339fd28f9d869b5ba3759e9e464d3911224820f3a2
 
 
 
-@app.route('/getVoice')
+@app.route('/GenShin/GetVoice')
 def giveBackURL():
     if(request.method == "GET"):
         # 从./db/character.db中随机取出一条数据，以json返回
