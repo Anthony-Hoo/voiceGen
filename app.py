@@ -19,7 +19,7 @@ def giveBackURL():
         import sqlite3
         conn = sqlite3.connect('/var/www/character.db')
         c = conn.cursor()
-        c.execute("SELECT * FROM character WHERE id >= (ABS(RANDOM()) % (SELECT MAX(rowid) FROM character)) LIMIT 1;")
+        c.execute("SELECT * FROM character WHERE id >= (ABS(RANDOM()) % (SELECT MAX(id) FROM character)) LIMIT 1;")
         result = c.fetchone()
         conn.close()
         # 生成返回的json
