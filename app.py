@@ -18,7 +18,7 @@ def giveBackURL():
     if(request.method == "GET"):
         # 从./db/character.db中随机取出一条数据，以json返回
         import sqlite3
-        conn = sqlite3.connect('./db/character.db')
+        conn = sqlite3.connect('/var/www/character.db')
         c = conn.cursor()
         c.execute("SELECT * FROM character WHERE id >= (ABS(RANDOM()) % (SELECT MAX(id) FROM character)) LIMIT 1;")
         result = c.fetchone()
@@ -55,7 +55,7 @@ def giveBackURLv2():
             args['type'] = ''
 
         import sqlite3
-        conn = sqlite3.connect('./db/genshinVoice.db')
+        conn = sqlite3.connect('/var/www/genshinVoice.db')
         c = conn.cursor()
 
         # 如果没有参数，随机返回一条数据
