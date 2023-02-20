@@ -31,7 +31,7 @@ def giveBackURL():
             'audio': result[4],
         })
 
-@app.route('/v2')
+@app.route('/GenShin/GetVoice/v2')
 def giveBackURLv2():
     if(request.method == "GET"):
         parser = RequestParser()
