@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, render_template, url_for, redirect
+from flask_restful.reqparse import RequestParser
 
 
 
@@ -17,7 +18,7 @@ def giveBackURL():
     if(request.method == "GET"):
         # 从./db/character.db中随机取出一条数据，以json返回
         import sqlite3
-        conn = sqlite3.connect('/var/www/character.db')
+        conn = sqlite3.connect('./db/character.db')
         c = conn.cursor()
         c.execute("SELECT * FROM character WHERE id >= (ABS(RANDOM()) % (SELECT MAX(id) FROM character)) LIMIT 1;")
         result = c.fetchone()
@@ -29,6 +30,64 @@ def giveBackURL():
             'text': result[3],
             'audio': result[4],
         })
+
+@app.route('/v2')
+def giveBackURLv2():
+    if(request.method == "GET"):
+        parser = RequestParser()
+        parser.add_argument('character', location= 'args', required=False)
+        parser.add_argument('topic', location= 'args', required=False)
+        parser.add_argument('text', location= 'args', required=False)
+        parser.add_argument('sex', location= 'args', required=False)
+        parser.add_argument('type', location= 'args', required=False)
+        args = parser.parse_args()
+        print(args)
+        # 替换掉空参数
+        if args['character'] == None:
+            args['character'] = ''
+        if args['topic'] == None:
+            args['topic'] = ''
+        if args['text'] == None:
+            args['text'] = ''
+        if args['sex'] == None:
+            args['sex'] = ''
+        if args['type'] == None:
+            args['type'] = ''
+
+        import sqlite3
+        conn = sqlite3.connect('./db/genshinVoice.db')
+        c = conn.cursor()
+
+        # 如果没有参数，随机返回一条数据
+        if args['character'] == None and args['topic'] == None and args['text'] == None:
+            c.execute("SELECT * FROM character WHERE id >= (ABS(RANDOM()) % (SELECT MAX(id) FROM character)) LIMIT 1;")
+            result = c.fetchone()
+            conn.close()
+            return jsonify(result)
+        # 如果有参数，根据参数返回数据
+        else:
+            sql = "SELECT * FROM character WHERE npcNameLocal like '%{}%' AND topic like '%{}%' AND text like '%{}%' AND sex like '%{}%' AND type like '%{}%'".format(args['character'], args['topic'], args['text'], args['sex'], args['type'])
+            c.execute(sql)
+
+            # 从result中随机取出一条数据
+            import random
+            result = c.fetchall()
+            print(len(result))
+
+            result = random.choice(result)
+            conn.close()
+            return jsonify({
+                'npcNameLocal'  : result[1],
+                'sex'           : result[2], 
+                'type'          : result[3], 
+                'topic'         : result[4],
+                'text'          : result[5],
+                'npcNameCode'   : result[6],
+                'language'      : result[7],
+                'fileName'      : result[8],
+                'audioURL'      : result[9],
+            })
+
 
 def run():
     app.run(host="*0.0.0.0", port=8000)

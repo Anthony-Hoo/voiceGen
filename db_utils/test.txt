@@ -1,0 +1,7 @@
+"011fcfda13b196b3": {
+    "fileName": "Chinese\\VO_COOP\\VO_npc\\vo_WLCOP001_1902803_yasuhisa_01.wem",
+    "language": "CHS",
+    "npcName": "泰久",
+    "text": "老大，不是说最危险的地方就是最安全的地方…",
+    "type": "Dialog"
+}
