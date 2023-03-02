@@ -67,8 +67,11 @@ def giveBackURLv2():
                 return jsonify(result)
             # 如果有参数，根据参数返回数据
             else:
-                sql = "SELECT * FROM character WHERE npcNameLocal like '%{}%' AND topic like '%{}%' AND text like '%{}%' AND sex like '%{}%' AND type like '%{}%'".format(args['character'], args['topic'], args['text'], args['sex'], args['type'])
-                c.execute(sql)
+                sql = "SELECT * FROM character WHERE npcNameLocal like ? AND topic like ? AND text like ? AND sex like ? AND type like ?"
+
+                argsList = (args['character'], args['topic'], args['text'], args['sex'], args['type'])
+
+                c.execute(sql, argsList)
 
                 # 从result中随机取出一条数据
                 import random
@@ -94,7 +97,7 @@ def giveBackURLv2():
                 })
         except Exception as e:
             print(e)
-            return jsonify({'text':'进不去……','err':e}), 404
+            return jsonify({'text':'进不去……','err':str(e)}), 404
 
 
 def run():
