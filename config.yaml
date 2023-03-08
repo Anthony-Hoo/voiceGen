@@ -1,1 +1,47 @@
-DEBUG = False
+flask:
+  secret_key: "xxx"
+  debug: false
+
+sqlite:
+  path: "/var/www"
+
+azure:
+  speech_key: "xxx"
+  speech_region: "xxx"
+
+genshin:
+  file_server: 
+    host: "https://xxxx"
+    token: "xxxx"
+  commands_template: 'python inference_main.py -m "{model_path}" -c "{config_path}" -n "{voice_path}" -t {key} -s "{speaker_name}"'
+  voice_model: 
+    -
+      character_name: "纳西妲"
+      model_path: "D:/model/纳西妲/G_16800.pth"
+      config_path: "D:/model/纳西妲/config.json"
+      key: 4
+      speaker_name: "VO_nahida"
+    -
+      character_name: "派蒙"
+      model_path: "D:/model/派蒙/G_92800.pth"
+      config_path: "D:/model/派蒙/config.json"
+      key: 4
+      speaker_name: "VO_paimon"
+    -
+      character_name: "雷电将军"
+      model_path: "D:/model/雷军2/G_45600.pth"
+      config_path: "D:/model/雷军2/config.json"
+      key: 4
+      speaker_name: "raiden_shogun"
+    -
+      character_name: "甘雨"
+      model_path: "D:/model/甘雨+胡桃/G_128000.pth"
+      config_path: "D:/model/甘雨+胡桃/config.json"
+      key: 4
+      speaker_name: "VO_ganyu"
+    -
+      character_name: "胡桃"
+      model_path: "D:/model/甘雨+胡桃/G_128000.pth"
+      config_path: "D:/model/甘雨+胡桃/config.json"
+      key: 4
+      speaker_name: "VO_hutao"
