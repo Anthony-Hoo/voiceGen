@@ -182,8 +182,8 @@ def generateCharaVoice():
             start_time = time.time()
             while not os.path.exists(genshin_voice_path):
                 time.sleep(0.1)
-                # 最多等待60秒
-                if time.time() - start_time > 60:
+                # 最多等待120秒
+                if time.time() - start_time > 120:
                     return jsonify({"text": "进不去……"}), 404
 
             # 调用ffmpeg将音频文件转码为ogg
