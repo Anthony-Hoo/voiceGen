@@ -1,3 +1,4 @@
+import hashlib
 import os
 import sys
 import time
@@ -8,7 +9,11 @@ import azure.cognitiveservices.speech as speechsdk
 # 第一步，产生基础的tts语音音频文件
 def tts_azure(tts_config, txt, audioOuputPath='audio_temp/tts_temp/'):
 
-    audioOuputFile = audioOuputPath + str(int(time.time())) + '.wav'
+    # 将文件名改为文本的md5值
+    audioOuputFile = audioOuputPath + str(hashlib.md5(txt.encode('utf-8')).hexdigest()) + '.wav'
+    # 如果文件已经存在，则直接返回文件名
+    if os.path.exists(audioOuputFile):
+        return audioOuputFile
 
     languageCode = 'zh-CN'
     voicName = 'zh-CN-XiaoxuanNeural'
@@ -36,9 +41,4 @@ def tts_azure(tts_config, txt, audioOuputPath='audio_temp/tts_temp/'):
     return audioOuputFile
 
 if __name__ == '__main__':
-    tts_config = {
-        "speech_key": "49a539a960dc4a10ba5f87a67009088d",
-        "speech_region": "eastasia"
-    }
-    txt = 'We hope someday, having solved the problems we face, to join a community of galactic civilizations. This record represents our hope and our determination, and our good will in a vast and awesome universe.'
-    audioOuputFile = tts_azure(tts_config, txt)
+    pass

@@ -7,6 +7,10 @@
 
 本项目的数据源来自 [mys-voice-genshin](https://github.com/CSUSTers/mys-voice-genshin) 和 [GenshinVoice](https://github.com/w4123/GenshinVoice) 在此感谢这两个项目。
 
+音色迁移的算法来自 [so-vits-svc](https://github.com/innnky/so-vits-svc), 使用此功能即代表你同意了 so-vits-svc 的开源协议，以及相关附加许可。
+音色模型需要您自己训练，训练方法请参考 so-vits-svc 相关文档。
+TTS来自 Azure 的相关api，如需使用，请在配置文件 config.yaml 中添加您自己的api相关信息。
+
 另，本项目使用的语音素材及文本，版权均归于米哈游所有。本项目仅用于学习交流，除已获取版权方许可者外，禁止使用本项目进行商业用途。
 
 ## 如何用
@@ -25,7 +29,7 @@ sudo ./start_docker_container.sh
 #### 1. 获取语音列表（数据来自[米游社](https://github.com/CSUSTers/mys-voice-genshin)）
 | URL | request | version | status |
 | :--- | :--- | :--- | :--- |
-| /GenShin/GetVoice | Get | 1.0 | true |
+| /GetVoice | Get | 1.0 | true |
 
 ##### 请求参数说明
 
@@ -54,7 +58,7 @@ sudo ./start_docker_container.sh
 #### 2. 获取语音列表（数据来自[游戏解包](https://github.com/w4123/GenshinVoice)）
 | URL | request | version | status |
 | :--- | :--- | :--- | :--- |
-| /GenShin/GetVoice/v2 | Get | 2.0 | true |
+| /GetVoice/v2 | Get | 2.0 | true |
 
 ##### 请求参数说明
 
@@ -96,6 +100,38 @@ sudo ./start_docker_container.sh
 }
 ```
 
+#### 3. 生成指定音色的音频( Azure TTS + [so-vits-svc](https://github.com/innnky/so-vits-svc) )
+| URL | request | version | status |
+| :--- | :--- | :--- | :--- |
+| /GetVoice/v3 | Get | 3.0 | true |
+
+##### 请求参数说明
+
+| 请求参数 | 类型 | 必填 | 参数说明 | 示例 |
+| :--- | :--- | :--- | :--- | :--- |
+| character | String | false | 角色名称 |雷电将军 |
+| text | String | true | 将生成的语音文本 |你们这些小鬼，还不快快滚开！ |
+
+注意： 在不传入角色时，将从config.yaml中随机选择一个角色
+
+##### 返回参数说明
+| 返回参数 | 参数类型 | 参数说明 |
+| :--- | :--- | :--- |
+| voice_url | string | 语音文件url |
+| character | string | 角色名称 |
+| text | string | 语音文本 |
+
+##### 返回示例JSON
+
+```json
+{
+    "character": "雷电将军",
+    "text": "你说得对，但是睿宝是我的宝<mstts:express-as style=\"sad\" styledegree=\"2\"> 快走吧，路上一定要注意安全，早去早回。 </mstts:express-as>\"",
+    "voice_url": "https://api-server/fileServer/files/xxxxxyyyy.ogg"
+}
+```
+
+
 ## 项目结构
 ```
 ├── db/
@@ -104,6 +140,7 @@ sudo ./start_docker_container.sh
 │   └── result.json # 来自 w4123/GenshinVoice 项目的数据文件
 ├── db_utils/
 │   └── db_utils.py # 将json导入数据库的工具
+├── config.yaml # 配置文件
 └── ******** # 其他文件
 ``` 
 

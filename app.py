@@ -10,7 +10,7 @@ from utils import tools
 import yaml
 
 
-config = yaml.safe_load(open(r"D:\CodeSpace\voiceGen\config.yaml", encoding="utf-8"))
+config = yaml.safe_load(open("./config.yaml", encoding="utf-8"))
 
 app = Flask(__name__)
 app.debug = config["flask"]["debug"]
@@ -168,14 +168,14 @@ def generateCharaVoice():
             tts_output_path = tts_helper.tts_azure(
                 tts_config=config["azure"], txt=args["text"]
             )
-            args = {
+            infer_args = {
                 "model_path": voice_model["model_path"],
                 "config_path": voice_model["config_path"],
                 "trans": voice_model["key"],
                 "spk_list": voice_model["speaker_name"],
                 "clean_names": tts_output_path,
             }
-            worker_quene.add_task((inference_main.inference, args))
+            worker_quene.add_task((inference_main.inference, infer_args))
 
             genshin_voice_path = f'./{tts_output_path.replace("tts", "infer")}_{str(voice_model["key"])+"key"}_{voice_model["speaker_name"]}.flac'
             # 等待生成的音频文件生成, 检查文件是否存在
@@ -208,6 +208,7 @@ def generateCharaVoice():
                     {
                         "voice_url": voice_url,
                         "character": voice_model["character_name"],
+                        "text": args["text"],
                     }
                 )
             else:
