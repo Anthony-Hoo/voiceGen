@@ -141,7 +141,7 @@ sudo ./start_docker_container.sh
 | 请求参数 | 类型 | 必填 | 参数说明 | 示例 |
 | :--- | :--- | :--- | :--- | :--- |
 | character | String | false | 角色名称 |雷电将军 |
-| text | String | true | SSML内容 | <speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" version="1.0" xml:lang="zh-CN"><voice name="zh-CN-XiaoxuanNeural"><mstts:express-as style="gentle"><prosody rate="+35%" pitch="+10%">你们这些小鬼，还不快快滚开！</prosody></mstts:express-as></voice></speak> |
+| text | String | true | SSML内容 | ` <speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" version="1.0" xml:lang="zh-CN"><voice name="zh-CN-XiaoxuanNeural"><mstts:express-as style="gentle"><prosody rate="+35%" pitch="+10%">你们这些小鬼，还不快快滚开！</prosody></mstts:express-as></voice></speak> `|
 
 注意： 在不传入角色时，将从config.yaml中随机选择一个角色
 
