@@ -7,27 +7,14 @@ import azure.cognitiveservices.speech as speechsdk
 
 
 # 第一步，产生基础的tts语音音频文件
-def tts_azure(tts_config, txt, audioOuputPath='audio_temp/tts_temp/'):
+def tts_azure_customized(tts_config, ssml, audioOuputPath='audio_temp/tts_temp/'):
 
     # 将文件名改为文本的md5值
-    audioOuputFile = audioOuputPath + str(hashlib.md5(txt.encode('utf-8')).hexdigest()) + '.wav'
+    audioOuputFile = audioOuputPath + str(hashlib.md5(ssml.encode('utf-8')).hexdigest()) + '.wav'
     # 如果文件已经存在，则直接返回文件名
     if os.path.exists(audioOuputFile):
         return audioOuputFile
 
-    languageCode = 'zh-CN'
-    voicName = 'zh-CN-XiaoxuanNeural'
-    speakingRate = '-15%'
-    pitch = '-10%'
-    voiceStyle = 'gentle'
-
-    head1 = f'<speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" version="1.0" xml:lang="{languageCode}">'
-    head2 = f'<voice name="{voicName}">'
-    head3 =f'<mstts:express-as style="{voiceStyle}">'
-    head4 = f'<prosody rate="{speakingRate}" pitch="{pitch}">'
-    tail= '</prosody></mstts:express-as></voice></speak>'
-
-    ssml = head1 + head2 + head3 + head4 + txt + tail
     print('this is the ssml======================================')
     print(ssml)
     print('end ssml======================================')
@@ -39,6 +26,21 @@ def tts_azure(tts_config, txt, audioOuputPath='audio_temp/tts_temp/'):
     synthesizer.speak_ssml_async(ssml).get()
     
     return audioOuputFile
+
+# 默认tts配置
+def tts_azure(tts_config, txt, audioOuputPath='audio_temp/tts_temp/'):
+    languageCode = 'zh-CN'
+    voicName = 'zh-CN-XiaoxuanNeural'
+    speakingRate = '-15%'
+    pitch = '-10%'
+    voiceStyle = 'gentle'
+
+    head1 = f'<speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" version="1.0" xml:lang="{languageCode}">'
+    head2 = f'<voice name="{voicName}">'
+    head3 =f'<mstts:express-as style="{voiceStyle}">'
+    head4 = f'<prosody rate="{speakingRate}" pitch="{pitch}">'
+    tail= '</prosody></mstts:express-as></voice></speak>'
+    return tts_azure_customized(tts_config, head1 + head2 + head3 + head4 + txt + tail, audioOuputPath)
 
 if __name__ == '__main__':
     pass
