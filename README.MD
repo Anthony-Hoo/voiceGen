@@ -131,6 +131,37 @@ sudo ./start_docker_container.sh
 }
 ```
 
+#### 4. 从自定义SSML生成音频( Azure TTS + [so-vits-svc](https://github.com/innnky/so-vits-svc) )
+| URL | request | version | status |
+| :--- | :--- | :--- | :--- |
+| /GetVoice/v4 | Get | 4.0 | true |
+
+##### 请求参数说明
+
+| 请求参数 | 类型 | 必填 | 参数说明 | 示例 |
+| :--- | :--- | :--- | :--- | :--- |
+| character | String | false | 角色名称 |雷电将军 |
+| text | String | true | SSML内容 | <speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" version="1.0" xml:lang="zh-CN"><voice name="zh-CN-XiaoxuanNeural"><mstts:express-as style="gentle"><prosody rate="+35%" pitch="+10%">你们这些小鬼，还不快快滚开！</prosody></mstts:express-as></voice></speak> |
+
+注意： 在不传入角色时，将从config.yaml中随机选择一个角色
+
+##### 返回参数说明
+| 返回参数 | 参数类型 | 参数说明 |
+| :--- | :--- | :--- |
+| voice_url | string | 语音文件url |
+| character | string | 角色名称 |
+| text | string | 语音文本 |
+
+##### 返回示例JSON
+
+```json
+{
+    "character": "雷电将军",
+    "text": "你说得对，但是睿宝是我的宝<mstts:express-as style=\"sad\" styledegree=\"2\"> 快走吧，路上一定要注意安全，早去早回。 </mstts:express-as>\"",
+    "voice_url": "https://api-server/fileServer/files/xxxxxyyyy.ogg"
+}
+```
+
 
 ## 项目结构
 ```
@@ -142,5 +173,5 @@ sudo ./start_docker_container.sh
 │   └── db_utils.py # 将json导入数据库的工具
 ├── config.yaml # 配置文件
 └── ******** # 其他文件
-``` 
+```
 

@@ -218,6 +218,88 @@ def generateCharaVoice():
             print(e)
             return jsonify({"text": "进不去……", "err": str(e)}), 404
 
+# 自定义SSML生成语音文件
+@app.route("/GetVoice/v4")
+def generateCharaVoicePro():
+    if request.method == "GET":
+        try:
+            parser = RequestParser()
+            # 选择的角色以及将要生成的文本
+            parser.add_argument("character", location="args", required=False)
+            parser.add_argument("text", location="args", required=True)
+            args = parser.parse_args()
+            # 如果角色为空，则从配置文件随机选一个角色
+            voice_model = {}
+            if args["character"] == None:
+                import random
+
+                voice_model = random.choice(config["genshin"]["voice_model"])
+            else:
+                if any(
+                    model["character_name"] == args["character"]
+                    for model in config["genshin"]["voice_model"]
+                ):
+                    voice_model = next(
+                        model
+                        for model in config["genshin"]["voice_model"]
+                        if model["character_name"] == args["character"]
+                    )
+
+                else:
+                    return jsonify({"text": "角色不存在……"}), 404
+
+            tts_output_path = tts_helper.tts_azure_customized(
+                tts_config=config["azure"], txt=args["text"]
+            )
+            infer_args = {
+                "model_path": voice_model["model_path"],
+                "config_path": voice_model["config_path"],
+                "trans": voice_model["key"],
+                "spk_list": voice_model["speaker_name"],
+                "clean_names": tts_output_path,
+            }
+            worker_quene.add_task((inference_main.inference, infer_args))
+
+            genshin_voice_path = f'./{tts_output_path.replace("tts", "infer")}_{str(voice_model["key"])+"key"}_{voice_model["speaker_name"]}.flac'
+            # 等待生成的音频文件生成, 检查文件是否存在
+            start_time = time.time()
+            while not os.path.exists(genshin_voice_path):
+                time.sleep(0.1)
+                # 最多等待120秒
+                if time.time() - start_time > 120:
+                    return jsonify({"text": "进不去……"}), 404
+
+            # 调用ffmpeg将音频文件转码为ogg
+            os.system('ffmpeg -i '+ genshin_voice_path +' -c:a libopus -b:a 96K  {}.ogg -y'.format(genshin_voice_path.replace('.flac', '')))
+            # 删除原始文件
+            os.remove(genshin_voice_path)
+            genshin_voice_path = genshin_voice_path.replace('.flac', '.ogg')
+
+            upload_url = "{}/upload?token={}".format(
+                config["genshin"]["file_server"]["host"],
+                config["genshin"]["file_server"]["token"],
+            )
+            # 将音频文件上传到api服务器
+            file_path = tools.upload_file(upload_url, genshin_voice_path)
+            if file_path != None:
+                voice_url = "{}{}?token={}".format(
+                    config["genshin"]["file_server"]["host"],
+                    file_path,
+                    config["genshin"]["file_server"]["token"],
+                )
+                return jsonify(
+                    {
+                        "voice_url": voice_url,
+                        "character": voice_model["character_name"],
+                        "text": args["text"],
+                    }
+                )
+            else:
+                return jsonify({"text": "进不去……"}), 404
+
+        except Exception as e:
+            print(e)
+            return jsonify({"text": "进不去……", "err": str(e)}), 404
 
 def run():
     app.run(host="*0.0.0.0", port=8000)
