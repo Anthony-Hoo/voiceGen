@@ -187,7 +187,7 @@ def generateCharaVoice():
                     return jsonify({"text": "进不去……"}), 404
 
             # 调用ffmpeg将音频文件转码为ogg
-            os.system('ffmpeg -i '+ genshin_voice_path +' -c:a libopus -b:a 96K  {}.ogg -y'.format(genshin_voice_path.replace('.flac', '')))
+            os.system('/usr/bin/ffmpeg -i '+ genshin_voice_path +' -c:a libopus -b:a 96K  {}.ogg -y'.format(genshin_voice_path.replace('.flac', '')))
             # 删除原始文件
             os.remove(genshin_voice_path)
             genshin_voice_path = genshin_voice_path.replace('.flac', '.ogg')
