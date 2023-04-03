@@ -1,5 +1,7 @@
+import json
 import os
 import time
+from uuid import uuid4
 from flask import Flask, request, jsonify, render_template, url_for, redirect
 from flask_restful.reqparse import RequestParser
 import requests
@@ -7,6 +9,7 @@ from utils import tts_helper
 from utils.sovits import inference_main
 from utils import gpu_woker_quene
 from utils import tools
+from utils.chatglm.infer import chatInfer
 import yaml
 
 
@@ -219,18 +222,19 @@ def generateCharaVoice():
             return jsonify({"text": "进不去……", "err": str(e)}), 404
 
 # 自定义SSML生成语音文件
-@app.route("/GetVoice/v4")
+@app.route("/GetVoice/v4", methods=['POST'])
 def generateCharaVoicePro():
-    if request.method == "GET":
+    if request.method == "POST":
         try:
-            parser = RequestParser()
-            # 选择的角色以及将要生成的文本
-            parser.add_argument("character", location="args", required=False)
-            parser.add_argument("text", location="args", required=True)
-            args = parser.parse_args()
+            # 从表单导入参数，设置必填参数
+            args = request.form.to_dict()
+            # 必填
+            if 'text' not in args:
+                return jsonify({"text": "进不去……"}), 404
+
             # 如果角色为空，则从配置文件随机选一个角色
             voice_model = {}
-            if args["character"] == None:
+            if 'character' not in args:
                 import random
 
                 voice_model = random.choice(config["genshin"]["voice_model"])
@@ -249,7 +253,7 @@ def generateCharaVoicePro():
                     return jsonify({"text": "角色不存在……"}), 404
 
             tts_output_path = tts_helper.tts_azure_customized(
-                tts_config=config["azure"], txt=args["text"]
+                tts_config=config["azure"], ssml=args["text"]
             )
             infer_args = {
                 "model_path": voice_model["model_path"],
@@ -270,7 +274,7 @@ def generateCharaVoicePro():
                     return jsonify({"text": "进不去……"}), 404
 
             # 调用ffmpeg将音频文件转码为ogg
-            os.system('ffmpeg -i '+ genshin_voice_path +' -c:a libopus -b:a 96K  {}.ogg -y'.format(genshin_voice_path.replace('.flac', '')))
+            os.system('/usr/bin/ffmpeg -i '+ genshin_voice_path +' -c:a libopus -b:a 96K  {}.ogg -y'.format(genshin_voice_path.replace('.flac', '')))
             # 删除原始文件
             os.remove(genshin_voice_path)
             genshin_voice_path = genshin_voice_path.replace('.flac', '.ogg')
@@ -297,6 +301,41 @@ def generateCharaVoicePro():
             else:
                 return jsonify({"text": "进不去……"}), 404
 
+        except Exception as e:
+            print(e)
+            return jsonify({"text": "进不去……", "err": str(e)}), 404
+
+# chatGLM 调用
+@app.route("/Chat", methods=['GET'])
+def chatGML_rq():
+    if request.method == 'GET':
+        try:
+            parser = RequestParser()
+            # 输入的文本
+            parser.add_argument("text", location="args", required=False)
+            args = parser.parse_args()
+            text = ""
+            if args["text"] != None:
+                text = args["text"]
+            # 生成一个uuid
+            uuid = str(uuid4())
+            args = {'text': text, 'filename': 'audio_temp/chat_temp/{}.json'.format(uuid)}
+            worker_quene.add_task((chatInfer, args))
+
+            # 等待生成的回复文件生成, 检查文件是否存在
+            start_time = time.time()
+            while not os.path.exists(args["filename"]):
+                time.sleep(0.1)
+                # 最多等待30秒
+                if time.time() - start_time > 30:
+                    return jsonify({"text": "进不去……"}), 404
+
+            out_text = ''
+            with open(args["filename"], 'r',encoding='UTF8') as f:
+                out_text = json.loads(f.read())['text']
+            if out_text == '':
+                return jsonify({"text": "进不去……", "err": str(e)}), 404
+            return jsonify({"text":out_text})
         except Exception as e:
             print(e)
             return jsonify({"text": "进不去……", "err": str(e)}), 404

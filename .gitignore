@@ -137,6 +137,14 @@ utils/sovits/hubert/checkpoint_best_legacy_500.pt
 *.flac
 *.wav
 
+# json temp file
+*.json
+
 # config file
 config.yaml
 config.yaml
+
+# model file
+*.pt
+*.bin
+*.pth
