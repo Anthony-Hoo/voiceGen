@@ -335,7 +335,7 @@ def chatGML_rq():
                 out_text = json.loads(f.read())['text']
             if out_text == '':
                 return jsonify({"text": "进不去……", "err": str(e)}), 404
-            return jsonify({"text":out_text})
+            return jsonify({"text": tools.remove_spaces_between_chinese_characters(out_text)})
         except Exception as e:
             print(e)
             return jsonify({"text": "进不去……", "err": str(e)}), 404
