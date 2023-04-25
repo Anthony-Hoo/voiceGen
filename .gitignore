@@ -148,3 +148,5 @@ config.yaml
 *.pt
 *.bin
 *.pth
+utils/chatglm/infer.py
+utils/chatglm/model

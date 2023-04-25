@@ -4,11 +4,11 @@ from utils.chatglm.modeling_chatglm import ChatGLMForConditionalGeneration
 import torch
 import sys
 
-from transformers import AutoTokenizer, GenerationConfig
+from transformers import AutoTokenizer, GenerationConfig, AutoModel
 
 torch.set_default_tensor_type(torch.cuda.HalfTensor)
-model = ChatGLMForConditionalGeneration.from_pretrained("THUDM/chatglm-6b", trust_remote_code=True).cuda().half()
-tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm-6b", trust_remote_code=True)
+model = AutoModel.from_pretrained("THUDM/chatglm-6b", trust_remote_code=True, revision="fdb7a60", cache_dir ="utils/chatglm/model/").cuda().half()
+tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm-6b", trust_remote_code=True, revision="fdb7a60", cache_dir ="utils/chatglm/model/")
 
 
 from peft import get_peft_model, LoraConfig, TaskType, PeftModel
@@ -51,14 +51,20 @@ def chatInfer(args):
         filename = args["filename"]
         with torch.no_grad():
             input_text = f"Context: {text}Answer: " 
-            ids = tokenizer.encode(input_text)
-            input_ids = torch.LongTensor([ids]).cuda()
+            ids = tokenizer([input_text], return_tensors="pt")
+            inputs = ids.to("cuda")
+            #input_ids = torch.LongTensor([ids]).cuda()
             out = model.generate(
-                input_ids=input_ids,
-                max_length=256,
+                **inputs,
+                max_length=224,
                 generation_config=generation_config
+
             )
-            out_text = tokenizer.decode(out[0]).split("Answer: ")[1]
+            out = out.tolist()[0]
+            #print(out)
+            decoder_output = tokenizer.decode(out)
+            #print(decoder_output)
+            out_text = decoder_output.split("Answer: ")[1]
             with open(filename, "w", encoding='UTF8') as f:
                 json.dump({"text": out_text, "input": text}, f, ensure_ascii=False)
     except Exception as e:
